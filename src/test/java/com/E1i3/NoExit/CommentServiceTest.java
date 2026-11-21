@@ -70,7 +70,6 @@ class CommentServiceTest {
                 .contents("hello")
                 .build();
 
-        when(memberRepository.findByEmail("other@test.com")).thenReturn(Optional.of(loginMember));
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
         assertThrows(IllegalArgumentException.class, () -> commentService.commentDelete(1L));
@@ -92,7 +91,6 @@ class CommentServiceTest {
                 .contents("hello")
                 .build();
 
-        when(memberRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
         assertDoesNotThrow(() -> commentService.commentDelete(1L));
@@ -109,7 +107,6 @@ class CommentServiceTest {
                 .email("owner@test.com")
                 .build();
 
-        when(memberRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
         when(commentRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> commentService.commentDelete(1L));
