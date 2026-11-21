@@ -30,7 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-chat")
                 .setAllowedOrigins(
                         "https://www.noexxit.store",
-                        "https://server.noexxit.store",
+                        "https://server.noexxit.store"
                     )
                 .withSockJS();
     }

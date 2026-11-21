@@ -106,9 +106,6 @@ public class MemberService {
 		Member member = memberRepository.findByEmail(email)
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 	    String encodedPassword = member.getPassword();
-	    if (memberUpdateDto.getPassword() != null && !memberUpdateDto.getPassword().isBlank()) {
-	        encodedPassword = passwordEncoder.encode(memberUpdateDto.getPassword());
-	    }
 	
 	    String imageUrl;
 	    if (imgFile != null && !imgFile.isEmpty()) {

@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import io.jsonwebtoken.Claims;
@@ -58,6 +59,9 @@ public class MemberController {
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisTemplate<String, Object> redisTemplate;
+
+	@Value("${jwt.expirationRt}")
+	private int expirationRt;
 
 	@Value("${jwt.secretKeyRt}")
 	private String secretKeyRt;

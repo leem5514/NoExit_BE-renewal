@@ -8,7 +8,7 @@ server:
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://${DB_HOST}:3306/noexit
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT:3306}/noexit
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -29,6 +29,9 @@ spring:
     hibernate:
       ddl-auto: create
     show_sql : true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
   application:
     name: noexit
   servlet:

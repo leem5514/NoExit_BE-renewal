@@ -1,0 +1,20 @@
+# Local dependencies for NoExit (development only)
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: noexit
+      MARIADB_USER: noexit
+      MARIADB_PASSWORD: noexit
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # web UI to read captured mails

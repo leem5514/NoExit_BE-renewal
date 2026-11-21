@@ -1,4 +1,4 @@
-FROM openjdk:11 as stage1
+FROM eclipse-temurin:17-jdk AS stage1
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY settings.gradle .
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 
-FROM openjdk:11
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=stage1 /app/build/libs/*.jar app.jar
 

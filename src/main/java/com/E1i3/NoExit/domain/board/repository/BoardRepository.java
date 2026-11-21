@@ -66,7 +66,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             join fetch b.member m
             left join fetch b.comments c
             left join fetch c.member
-            left join fetch b.imgs i
             where b.id = :id
             """)
     Optional<Board> findDetailBoardById(@Param("id") Long id);
