@@ -1,0 +1,90 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}:3306/noexit
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 15000
+  session:
+    store-type: redis
+    redis:
+      flush-mode: immediate
+      namespace: chat
+
+
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    show_sql : true
+  application:
+    name: noexit
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 215MB
+  mvc:  # pathmatch 빠지니까 스웨거 null pointer 오류 남
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+#          5 * 60 * 1000 == 5분
+    auth-code-expiration-millis: 300000
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+jwt:
+  expiration: 30
+  secretKey: ${JWT_SECRET}
+  expirationRt: 14400
+  secretKeyRt: ${JWT_SECRET_RT}
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region: #S3 지역
+      static: ${AWS_REGION}
+    s3: #버킷이름
+      bucket: ${AWS_BUCKET_NAME}
+      folder:
+        folderName1: member/
+        folderName2: review/
+        folderName3: game/
+        folderName4: storeInfo/
+        folderName5: board/
+    stack:
+      auto: false
+#logging:
+#  level:
+#    root: DEBUG
+#  org:
+#    springframework: DEBUG
