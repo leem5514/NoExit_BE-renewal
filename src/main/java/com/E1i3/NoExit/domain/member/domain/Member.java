@@ -135,7 +135,6 @@ public class Member extends BaseTimeEntity{
 		return MemberDetResDto.builder()
 			.username(this.username)
 			.nickname(this.nickname)
-			.password(this.password)
 			.email(this.email)
 			.age(this.age)
 			.phone_number(this.phone_number)

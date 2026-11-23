@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class MemberDetResDto {
 	// 마이페이지
 	private String username;
-	private String password;
 	private String email;
 	private String phone_number;
 	private String nickname;

@@ -105,7 +105,7 @@ public class MemberController {
 	@Operation(summary = "[일반 사용자] 사용자 탈퇴 API")
 	@PostMapping("/member/delete")
 	public ResponseEntity<CommonResDto> deleteMember(@RequestBody MemberUpdateDto dto) {
-		CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "회원정보 삭제", memberService.memberDelete());
+		CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "회원정보 삭제", memberService.memberDelete().getId());
 		return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 	}
 
