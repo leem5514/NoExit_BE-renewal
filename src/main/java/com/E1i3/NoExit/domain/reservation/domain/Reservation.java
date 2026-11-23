@@ -5,6 +5,7 @@ import com.E1i3.NoExit.domain.common.domain.DelYN;
 import com.E1i3.NoExit.domain.game.domain.Game;
 import com.E1i3.NoExit.domain.member.domain.Member;
 import com.E1i3.NoExit.domain.owner.domain.Owner;
+import com.E1i3.NoExit.domain.reservation.dto.ReservationCreateResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationDetailResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationUpdateResDto;
 import com.E1i3.NoExit.domain.review.domain.Review;
@@ -133,6 +134,22 @@ public class Reservation extends BaseTimeEntity {
                 .gameName(this.game.getGameName())
                 .storeName(this.game.getStore().getStoreName())
                 .createdTime(this.createdTime().format(formatter))
+                .build();
+    }
+
+    public ReservationCreateResDto toCreateResDto() {
+        return ReservationCreateResDto.builder()
+                .id(this.id)
+                .resName(this.resName)
+                .phoneNumber(this.phoneNumber)
+                .numberOfPlayers(this.numberOfPlayers)
+                .resDate(this.resDate)
+                .resDateTime(this.resDateTime)
+                .gameId(this.game != null ? this.game.getId() : null)
+                .gameName(this.game != null ? this.game.getGameName() : null)
+                .storeName(this.game != null && this.game.getStore() != null ? this.game.getStore().getStoreName() : null)
+                .reservationStatus(this.reservationStatus)
+                .approvalStatus(this.approvalStatus)
                 .build();
     }
 

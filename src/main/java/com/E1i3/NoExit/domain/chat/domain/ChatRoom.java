@@ -24,6 +24,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
     private String name;
+    @JsonIgnore // 응답 직렬화에서 제외 (생성은 CreateRoomRequest 로 받음)
     private String password;
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

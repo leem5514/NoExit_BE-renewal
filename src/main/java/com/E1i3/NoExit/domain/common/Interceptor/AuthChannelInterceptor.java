@@ -33,7 +33,8 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String accessToken = accessor.getFirstNativeHeader("Authorization");
-            System.out.println("Access Token: " + accessToken);  // 로그 추가
+            // 토큰 원문은 로그에 남기지 않는다 (재사용 가능한 자격 증명)
+            System.out.println("STOMP CONNECT Authorization header present: " + (accessToken != null));
 
             if (accessToken != null && accessToken.startsWith("Bearer ")) {
                 accessToken = accessToken.substring(7);

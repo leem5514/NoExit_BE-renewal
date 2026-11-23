@@ -2,6 +2,7 @@ package com.E1i3.NoExit.domain.reservation.controller;
 
 import com.E1i3.NoExit.domain.common.dto.CommonResDto;
 import com.E1i3.NoExit.domain.reservation.domain.Reservation;
+import com.E1i3.NoExit.domain.reservation.dto.ReservationCreateResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationDetailResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationListResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationOwnerCancelReqDto;
@@ -43,7 +44,7 @@ public class ReservationController {
     @PostMapping("/reservation/create") // 생성
     @Operation(summary= "[일반 사용자] 예약생성 API")
     public ResponseEntity<?> reservationCreate(@RequestBody ReservationSaveDto dto) {
-        Reservation reservation = reservationService.save(dto);
+        ReservationCreateResDto reservation = reservationService.save(dto).toCreateResDto();
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "예약 신청을 완료하였습니다.", reservation);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
