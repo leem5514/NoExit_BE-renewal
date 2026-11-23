@@ -7,3 +7,6 @@
 - Commit when asked; never push.
 - JSON bodies with Korean text: write the body to a file with `printf` and send it with `curl --data-binary @file` (inline Korean is sent as CP949). `python` is not available (Windows Store stub).
 - Seed accounts (InitialDataLoader): `user@test.com` / `owner@test.com`, password `12341234`; login body needs `"role": "USER" | "OWNER"`.
+- Git: the working directory is already the repository root, so run `git ...` directly (no `git -C <path>`).
+- Edit files (including ticking plan checkboxes) with the Edit tool, not `sed -i`.
+- Seed owner `test@test.com` cannot log in (its password is stored unencoded in InitialDataLoader); only `owner@test.com` works.
