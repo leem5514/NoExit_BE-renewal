@@ -51,6 +51,7 @@ public class SecurityConfigs {
 				).permitAll()
 				.antMatchers("/reservation/create").hasRole("USER")
 				.antMatchers("/reservation/storeReservation").hasRole("OWNER")
+				.antMatchers("/owner/stores", "/owner/stores/**", "/owner/games/**").hasRole("OWNER")
 				.antMatchers("/chat/**").authenticated()
 				.anyRequest().authenticated()
 				.and()

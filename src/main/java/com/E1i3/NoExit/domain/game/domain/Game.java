@@ -5,6 +5,7 @@ import com.E1i3.NoExit.domain.store.domain.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.E1i3.NoExit.domain.game.dto.GameResDto;
+import com.E1i3.NoExit.domain.game.dto.OwnerGameSaveReqDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -86,6 +87,17 @@ public class Game extends BaseTimeEntity {
         }
 
         return availableHours;
+    }
+
+    // 사장님 게임 수정 (PUT 전체 교체). store·wishCount·imagePath 는 변경하지 않는다.
+    public void update(OwnerGameSaveReqDto dto) {
+        this.gameName = dto.getGameName();
+        this.runningTime = dto.getRunningTime();
+        this.difficult = dto.getDifficult();
+        this.price = dto.getPrice();
+        this.maximunPerson = dto.getMaximunPerson();
+        this.ageLimit = dto.getAgeLimit();
+        this.gameInfo = dto.getGameInfo();
     }
 
     public void updateWishCount(boolean wish) {
