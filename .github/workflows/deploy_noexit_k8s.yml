@@ -1,8 +1,6 @@
 name: deploy noexit with k8s
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # renewal: no EKS target yet, auto-deploy disabled
 
 jobs:
   build-and-deploy:
