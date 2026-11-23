@@ -69,6 +69,8 @@ public class Reservation extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private DelYN delYN = DelYN.N;
 
+    private String cancelReason; // 점주 취소 사유
+
 //    private boolean reviewWritten = false; // 리뷰 읽음 처리
 
     @Builder
@@ -106,6 +108,16 @@ public class Reservation extends BaseTimeEntity {
 
     public void updateDelYN() {
         this.delYN = DelYN.Y;
+    }
+
+    @JsonIgnore
+    public boolean isCanceled() {
+        return this.reservationStatus == ReservationStatus.CANCELED || this.delYN == DelYN.Y;
+    }
+
+    public void cancelByOwner(String reason) {
+        this.reservationStatus = ReservationStatus.CANCELED;
+        this.cancelReason = reason;
     }
 
     public ReservationDetailResDto toDetailDto() {

@@ -277,6 +277,54 @@ public class ReservationService {
 
         return reservation;
     }
+
+    /* 점주의 예약 취소 (사유 필수, 예약자에게 알림) */
+    @PreAuthorize("hasRole('OWNER')")
+    @Transactional
+    public Reservation cancelByOwner(Long reservationId, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("취소 사유는 필수입니다.");
+        }
+        String trimmedReason = reason.trim();
+
+        String ownerEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Owner owner = ownerRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 점장 이메일입니다."));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다."));
+
+        Owner storeOwner = reservation.getGame().getStore().getOwner();
+        if (storeOwner == null || !storeOwner.getId().equals(owner.getId())) {
+            throw new IllegalArgumentException("본인 매장의 예약만 취소할 수 있습니다.");
+        }
+
+        if (reservation.isCanceled()) {
+            throw new IllegalStateException("이미 취소된 예약입니다.");
+        }
+
+        reservation.cancelByOwner(trimmedReason);
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        // 해당 시간대를 다시 예약 가능하도록 처리
+        String reservationKey = RESERVATION_LOCK_PREFIX + reservation.getGame().getStore().getStoreName() + ":" + reservation.getGame().getGameName() + ":" + reservation.getResDate() + ":" + reservation.getResDateTime();
+        reservationRedisTemplate.delete(reservationKey);
+
+        // 예약자에게 알림 전송 (publishMessage 내부에서 알림 저장)
+        String receiverEmail = reservation.getMember().getEmail();
+        NotificationResDto notificationResDto = NotificationResDto.builder()
+                .email(receiverEmail)
+                .sender_email(ownerEmail)
+                .notification_id(reservation.getId())
+                .type(NotificationType.RESERVATION_CANCEL)
+                .message(reservation.getGame().getStore().getStoreName() + "에서 " + reservation.getResDate() + " "
+                        + reservation.getResDateTime() + " 예약을 취소하였습니다. (사유: " + trimmedReason + ")")
+                .build();
+        sseController.publishMessage(notificationResDto, receiverEmail);
+
+        return savedReservation;
+    }
+
     // DTO에서 필요한 예약 상태를 추가로 포함한 데이터 반환
     public List<String> findAvailableHours(Long gameId, LocalDate resDate) {
         List<Reservation> reservations = reservationRepository.findByGameIdAndResDate(gameId, resDate);

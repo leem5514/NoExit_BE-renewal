@@ -4,6 +4,7 @@ import com.E1i3.NoExit.domain.common.dto.CommonResDto;
 import com.E1i3.NoExit.domain.reservation.domain.Reservation;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationDetailResDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationListResDto;
+import com.E1i3.NoExit.domain.reservation.dto.ReservationOwnerCancelReqDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationSaveDto;
 import com.E1i3.NoExit.domain.reservation.dto.ReservationUpdateResDto;
 import com.E1i3.NoExit.domain.reservation.service.ReservationService;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -95,6 +97,17 @@ public class ReservationController {
         Reservation canceledReservation = reservationService.cancelReservation(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "예약 취소가 완료되었습니다.", canceledReservation.getId());
 
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    /* 점주의 예약 취소 */
+    @PreAuthorize("hasRole('OWNER')")
+    @PutMapping("/reservation/owner/cancel/{id}")
+    @Operation(summary= "[점장 사용자] 예약 취소 API (사유 필수)")
+    public ResponseEntity<?> cancelReservationByOwner(@PathVariable Long id,
+                                                      @Valid @RequestBody ReservationOwnerCancelReqDto dto) {
+        Reservation canceledReservation = reservationService.cancelByOwner(id, dto.getReason());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "점주에 의한 예약 취소가 완료되었습니다.", canceledReservation.getId());
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
