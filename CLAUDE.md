@@ -9,4 +9,4 @@
 - Seed accounts (InitialDataLoader): `user@test.com` / `owner@test.com`, password `12341234`; login body needs `"role": "USER" | "OWNER"`.
 - Git: the working directory is already the repository root, so run `git ...` directly (no `git -C <path>`).
 - Edit files (including ticking plan checkboxes) with the Edit tool, not `sed -i`.
-- Seed owner `test@test.com` cannot log in (its password is stored unencoded in InitialDataLoader); only `owner@test.com` works.
+- Seed owner `test@test.com` / `12341234` also logs in as OWNER (password now encoded in InitialDataLoader).

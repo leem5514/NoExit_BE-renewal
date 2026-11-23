@@ -67,7 +67,7 @@ public class InitialDataLoader implements CommandLineRunner {
 			Owner test = Owner.builder()
 				.username("test")
 				.email("test@test.com")
-				.password("12341234")
+				.password(passwordEncoder.encode("12341234"))
 				.storeName("홍대의 유명한 추리 테마 방탈출")
 				.phoneNumber("010-9999-9999")
 				.role(Role.OWNER)
