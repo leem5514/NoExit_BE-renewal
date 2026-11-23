@@ -39,3 +39,6 @@ out/
 .vscode/
 
 local-env.ps1
+
+.claude/hooks/guard.log
+.claude/settings.local.json

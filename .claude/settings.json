@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./local-env.ps1)",
+      "Edit(./local-env.ps1)",
+      "Bash(git push:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.ps1\"" }
+        ]
+      }
+    ]
+  }
+}
