@@ -1,0 +1,15 @@
+title = "NoExit gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "spring-config-literal-secret"
+description = "Literal (non-${...}) secret or password in Spring/YAML config, regardless of entropy"
+regex = '''(?im)^\s*[\w.-]*(password|passwd|secret[-_]?key\w*|api[-_]?key)[ \t]*[:=][ \t]*['"]?([^\s'"$#][^'"#\r\n]{3,})'''
+secretGroup = 2
+path = '''(?i)\.(ya?ml|properties)$'''
+keywords = ["password", "passwd", "secret", "apikey", "api_key", "api-key"]
+
+[rules.allowlist]
+regexes = ['''^(noexit|root|ci|ci-dummy|local-dummy|dev)$''']
