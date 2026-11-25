@@ -355,6 +355,7 @@ public class ReservationService {
     public List<String> findAvailableHours(Long gameId, LocalDate resDate) {
         List<Reservation> reservations = reservationRepository.findByGameIdAndResDate(gameId, resDate);
         return reservations.stream()
+                .filter(r -> !r.isCanceled())
                 .map(Reservation::getResDateTime)
                 .collect(Collectors.toList());
     }
