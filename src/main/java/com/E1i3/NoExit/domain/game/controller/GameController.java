@@ -15,11 +15,15 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.E1i3.NoExit.domain.common.dto.CommonResDto;
 import com.E1i3.NoExit.domain.game.dto.GameResDto;
+import com.E1i3.NoExit.domain.game.dto.GameSearchDto;
+import com.E1i3.NoExit.domain.game.dto.GameSearchResDto;
 import com.E1i3.NoExit.domain.game.service.GameService;
 
 @RestController
@@ -37,6 +41,17 @@ public class GameController {
 			Pageable pageable) {
 		Page<GameResDto> games = gameService.gameList(pageable);
 		System.out.println("test");
+		return new ResponseEntity<>(new CommonResDto(HttpStatus.OK, "OK", games), HttpStatus.OK);
+	}
+
+	// 복합 조건 검색: 지역·난이도(여러 개)·가격 범위·인원·근처(lat/lng/radiusKm), 정렬 sort=LATEST|PRICE_ASC|PRICE_DESC|DISTANCE
+	@GetMapping("/game/search")
+	@Operation(summary = "게임 복합 조건 검색 API")
+	public ResponseEntity<CommonResDto> searchGames(
+			@ModelAttribute GameSearchDto searchDto,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "16") int size) {
+		Page<GameSearchResDto> games = gameService.search(searchDto, page, size);
 		return new ResponseEntity<>(new CommonResDto(HttpStatus.OK, "OK", games), HttpStatus.OK);
 	}
 

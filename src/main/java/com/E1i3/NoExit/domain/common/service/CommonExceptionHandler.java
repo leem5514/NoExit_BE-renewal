@@ -3,7 +3,9 @@ package com.E1i3.NoExit.domain.common.service;
 import javax.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.E1i3.NoExit.domain.common.dto.CommonErrorDto;
@@ -56,6 +58,16 @@ public class CommonExceptionHandler {
 				errorMessage.toString()
 		);
 		e.printStackTrace();
+		return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+	}
+
+	// 쿼리 파라미터 바인딩 실패 (예: /game/search?difficult=SIX, price=abc) → 400
+	@ExceptionHandler({BindException.class, MethodArgumentTypeMismatchException.class})
+	public ResponseEntity<CommonErrorDto> bindExceptionHandler(Exception e) {
+		CommonErrorDto commonErrorDto = new CommonErrorDto(
+				HttpStatus.BAD_REQUEST,
+				"요청 파라미터 형식이 올바르지 않습니다."
+		);
 		return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
 	}
 
