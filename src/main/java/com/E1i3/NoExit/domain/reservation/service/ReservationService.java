@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +68,7 @@ public class ReservationService {
     private RedisTemplate<String, Object> reservationRedisTemplate;
 
     private static final String RESERVATION_LOCK_PREFIX = "reservation:lock:";
+    private static final DateTimeFormatter RES_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     public ReservationService(ReservationRepository reservationRepository, GameRepository gameRepository, MemberRepository memberRepository, OwnerRepository ownerRepository, StoreRepository storeRepository,
 		SseController sseController, NotificationRepository notificationRepository,
@@ -95,13 +97,16 @@ public class ReservationService {
 	
 	    Owner owner = game.getStore().getOwner();
 
-	    validateReservableTime(game, dto.getResDateTime());
+	    // "10:00" 과 "10:00:00" 처럼 형식만 다른 요청이 서로 다른 잠금 키/저장값이 되지 않도록 "HH:mm" 으로 정규화
+	    LocalTime requestedTime = validateReservableTime(game, dto.getResDateTime());
+	    String normalizedTime = requestedTime.format(RES_TIME_FORMAT);
+	    dto.setResDateTime(normalizedTime);
 
 	    String reservationKey = RESERVATION_LOCK_PREFIX
 	            + game.getStore().getStoreName() + ":"
 	            + game.getGameName() + ":"
 	            + dto.getResDate() + ":"
-	            + dto.getResDateTime();
+	            + normalizedTime;
 	
 	    Boolean locked = reservationRedisTemplate.opsForValue()
 	            .setIfAbsent(reservationKey, "LOCKED", 3, TimeUnit.HOURS);
@@ -136,7 +141,7 @@ public class ReservationService {
 	}
 
 	// 요청 시각이 그 게임의 예약 가능 시작 시각(사장님 지정 시간대 또는 1시간 단위) 중 하나인지 확인.
-	private void validateReservableTime(Game game, String resDateTime) {
+	private LocalTime validateReservableTime(Game game, String resDateTime) {
 	    LocalTime requested;
 	    try {
 	        requested = LocalTime.parse(resDateTime == null ? "" : resDateTime.trim());
@@ -146,6 +151,7 @@ public class ReservationService {
 	    if (!gameService.getAvailableHours(game).contains(requested)) {
 	        throw new IllegalArgumentException("(예약불가) 해당 게임의 예약 가능 시간대가 아닙니다: " + resDateTime);
 	    }
+	    return requested;
 	}
     /* 예약한 리스트 */
     @PreAuthorize("hasRole('USER')")
