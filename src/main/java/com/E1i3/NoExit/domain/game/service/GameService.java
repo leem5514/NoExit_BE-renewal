@@ -3,8 +3,12 @@ package com.E1i3.NoExit.domain.game.service;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.E1i3.NoExit.domain.game.domain.GameTimeSlot;
+import com.E1i3.NoExit.domain.game.domain.GameTimeSlotPolicy;
 import com.E1i3.NoExit.domain.game.dto.GameDetailResDto;
+import com.E1i3.NoExit.domain.game.repository.GameTimeSlotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +25,12 @@ import javax.persistence.EntityNotFoundException;
 @Transactional(readOnly = true)
 public class GameService {
 	private final GameRepository gameRepository;
+	private final GameTimeSlotRepository gameTimeSlotRepository;
 
 	@Autowired
-	public GameService(GameRepository gameRepository) {
+	public GameService(GameRepository gameRepository, GameTimeSlotRepository gameTimeSlotRepository) {
 		this.gameRepository = gameRepository;
+		this.gameTimeSlotRepository = gameTimeSlotRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -40,23 +46,19 @@ public class GameService {
 		return GameDetailResDto.fromEntity(game);
 	}
 
-	// store의 오프닝 시간대을 게임에서 출력하기 위한 코드
+	// 게임 예약 가능 시작 시각: 사장님이 지정한 시간대가 있으면 그것, 없으면 매장 영업시간을 1시간 단위로.
 	public List<LocalTime> getAvailableHours(Long gameId) {
 		Game game = gameRepository.findById(gameId)
 				.orElseThrow(() -> new IllegalArgumentException("Invalid game ID"));
+		return getAvailableHours(game);
+	}
 
-		String openingHours = game.getStore().getOpeningHours();
-
-		String[] times = openingHours.split(" - ");
-		LocalTime startTime = LocalTime.parse(times[0]);
-		LocalTime endTime = LocalTime.parse(times[1]);
-
-		List<LocalTime> availableHours = new ArrayList<>();
-		while (!startTime.isAfter(endTime)) {
-			availableHours.add(startTime);
-			startTime = startTime.plusHours(1);
+	public List<LocalTime> getAvailableHours(Game game) {
+		List<GameTimeSlot> slots = gameTimeSlotRepository.findByGameIdOrderByStartTimeAsc(game.getId());
+		if (!slots.isEmpty()) {
+			return slots.stream().map(GameTimeSlot::getStartTime).collect(Collectors.toList());
 		}
-		return availableHours;
+		return GameTimeSlotPolicy.hourlySlots(game.getStore().getOpeningHours());
 	}
 
 	public List<GameResDto> gameListAll() {

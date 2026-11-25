@@ -48,6 +48,7 @@ class ReservationOwnerCancelTest {
     @Mock private SseController sseController;
     @Mock private NotificationRepository notificationRepository;
     @Mock private NotificationService notificationService;
+    @Mock private com.E1i3.NoExit.domain.game.service.GameService gameService;
     @Mock private RedisTemplate<String, Object> reservationRedisTemplate;
 
     private ReservationService reservationService;
@@ -59,7 +60,7 @@ class ReservationOwnerCancelTest {
     @BeforeEach
     void setUp() {
         reservationService = new ReservationService(reservationRepository, gameRepository, memberRepository,
-                ownerRepository, storeRepository, sseController, notificationRepository, notificationService);
+                ownerRepository, storeRepository, sseController, notificationRepository, notificationService, gameService);
         ReflectionTestUtils.setField(reservationService, "reservationRedisTemplate", reservationRedisTemplate);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken("owner@test.com", null));
