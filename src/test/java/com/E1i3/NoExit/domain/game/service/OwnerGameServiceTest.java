@@ -24,6 +24,9 @@ import com.E1i3.NoExit.domain.game.domain.Game;
 import com.E1i3.NoExit.domain.game.dto.OwnerGameResDto;
 import com.E1i3.NoExit.domain.game.dto.OwnerGameSaveReqDto;
 import com.E1i3.NoExit.domain.game.repository.GameRepository;
+import com.E1i3.NoExit.domain.game.repository.GameTimeSlotRepository;
+import com.E1i3.NoExit.domain.game.domain.GameTimeSlot;
+import com.E1i3.NoExit.domain.game.dto.GameTimeSlotResDto;
 import com.E1i3.NoExit.domain.owner.domain.Owner;
 import com.E1i3.NoExit.domain.owner.repository.OwnerRepository;
 import com.E1i3.NoExit.domain.store.domain.Store;
@@ -35,6 +38,7 @@ class OwnerGameServiceTest {
 	@Mock private GameRepository gameRepository;
 	@Mock private StoreRepository storeRepository;
 	@Mock private OwnerRepository ownerRepository;
+	@Mock private GameTimeSlotRepository gameTimeSlotRepository;
 
 	private OwnerGameService ownerGameService;
 
@@ -43,7 +47,7 @@ class OwnerGameServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		ownerGameService = new OwnerGameService(gameRepository, storeRepository, ownerRepository);
+		ownerGameService = new OwnerGameService(gameRepository, storeRepository, ownerRepository, gameTimeSlotRepository);
 		SecurityContextHolder.getContext().setAuthentication(
 			new UsernamePasswordAuthenticationToken("owner@test.com", null));
 		when(ownerRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(myOwner));
@@ -145,5 +149,69 @@ class OwnerGameServiceTest {
 		when(gameRepository.findById(999L)).thenReturn(Optional.empty());
 
 		assertThrows(EntityNotFoundException.class, () -> ownerGameService.update(999L, request("X")));
+	}
+
+	// ---- 예약 시간대 ----
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void replace_time_slots_on_own_game_deletes_then_saves_sorted() {
+		Game game = gameOf(storeOf(myOwner)); // 10:00 - 22:00, 50분
+		when(gameRepository.findById(100L)).thenReturn(Optional.of(game));
+
+		GameTimeSlotResDto result = ownerGameService.replaceTimeSlots(100L, java.util.List.of("14:30", "10:00"));
+
+		org.mockito.InOrder inOrder = inOrder(gameTimeSlotRepository);
+		inOrder.verify(gameTimeSlotRepository).deleteAllByGameId(100L);
+		ArgumentCaptor<Iterable<GameTimeSlot>> captor = ArgumentCaptor.forClass(Iterable.class);
+		inOrder.verify(gameTimeSlotRepository).saveAll(captor.capture());
+		java.util.List<String> saved = new java.util.ArrayList<>();
+		captor.getValue().forEach(s -> {
+			assertSame(game, s.getGame());
+			saved.add(s.getStartTime().toString());
+		});
+		assertEquals(java.util.List.of("10:00", "14:30"), saved);
+		assertEquals(100L, result.getGameId());
+		assertEquals(java.util.List.of("10:00", "14:30"), result.getStartTimes());
+	}
+
+	@Test
+	void replace_time_slots_on_other_owners_game_is_rejected() {
+		Game game = gameOf(storeOf(otherOwner));
+		when(gameRepository.findById(100L)).thenReturn(Optional.of(game));
+
+		assertThrows(IllegalArgumentException.class,
+			() -> ownerGameService.replaceTimeSlots(100L, java.util.List.of("10:00")));
+		verifyNoInteractions(gameTimeSlotRepository);
+	}
+
+	@Test
+	void replace_time_slots_with_invalid_time_keeps_existing_slots() {
+		Game game = gameOf(storeOf(myOwner));
+		when(gameRepository.findById(100L)).thenReturn(Optional.of(game));
+
+		// 21:30 + 50분 = 22:20 > 22:00
+		assertThrows(IllegalArgumentException.class,
+			() -> ownerGameService.replaceTimeSlots(100L, java.util.List.of("10:00", "21:30")));
+		verifyNoInteractions(gameTimeSlotRepository);
+	}
+
+	@Test
+	void replace_time_slots_with_empty_list_clears_custom_slots() {
+		Game game = gameOf(storeOf(myOwner));
+		when(gameRepository.findById(100L)).thenReturn(Optional.of(game));
+
+		GameTimeSlotResDto result = ownerGameService.replaceTimeSlots(100L, java.util.List.of());
+
+		verify(gameTimeSlotRepository).deleteAllByGameId(100L);
+		assertTrue(result.getStartTimes().isEmpty());
+	}
+
+	@Test
+	void replace_time_slots_on_missing_game_throws_entity_not_found() {
+		when(gameRepository.findById(999L)).thenReturn(Optional.empty());
+
+		assertThrows(EntityNotFoundException.class,
+			() -> ownerGameService.replaceTimeSlots(999L, java.util.List.of("10:00")));
 	}
 }

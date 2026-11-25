@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.E1i3.NoExit.domain.common.dto.CommonResDto;
+import com.E1i3.NoExit.domain.game.dto.GameTimeSlotReqDto;
+import com.E1i3.NoExit.domain.game.dto.GameTimeSlotResDto;
 import com.E1i3.NoExit.domain.game.dto.OwnerGameResDto;
 import com.E1i3.NoExit.domain.game.dto.OwnerGameSaveReqDto;
 import com.E1i3.NoExit.domain.game.service.OwnerGameService;
@@ -63,5 +65,11 @@ public class OwnerStoreController {
 	public ResponseEntity<?> updateGame(@PathVariable Long gameId, @Valid @RequestBody OwnerGameSaveReqDto dto) {
 		OwnerGameResDto game = ownerGameService.update(gameId, dto);
 		return new ResponseEntity<>(new CommonResDto(HttpStatus.OK, "게임이 수정되었습니다.", game), HttpStatus.OK);
+	}
+
+	@PutMapping("/owner/games/{gameId}/time-slots")
+	public ResponseEntity<?> replaceTimeSlots(@PathVariable Long gameId, @Valid @RequestBody GameTimeSlotReqDto dto) {
+		GameTimeSlotResDto slots = ownerGameService.replaceTimeSlots(gameId, dto.getStartTimes());
+		return new ResponseEntity<>(new CommonResDto(HttpStatus.OK, "예약 시간대가 저장되었습니다.", slots), HttpStatus.OK);
 	}
 }

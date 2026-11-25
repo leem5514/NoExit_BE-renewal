@@ -4,6 +4,7 @@ import com.E1i3.NoExit.domain.common.domain.DelYN;
 
 import com.E1i3.NoExit.domain.game.domain.Game;
 import com.E1i3.NoExit.domain.game.repository.GameRepository;
+import com.E1i3.NoExit.domain.game.service.GameService;
 import com.E1i3.NoExit.domain.member.domain.Member;
 import com.E1i3.NoExit.domain.member.domain.Role;
 import com.E1i3.NoExit.domain.member.repository.MemberRepository;
@@ -35,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +60,7 @@ public class ReservationService {
     private StoreRepository storeRepository;
     private final SseController sseController;
     private final NotificationRepository notificationRepository;
+    private final GameService gameService;
 
     @Autowired
     @Qualifier("2")
@@ -66,7 +70,7 @@ public class ReservationService {
 
     public ReservationService(ReservationRepository reservationRepository, GameRepository gameRepository, MemberRepository memberRepository, OwnerRepository ownerRepository, StoreRepository storeRepository,
 		SseController sseController, NotificationRepository notificationRepository,
-		NotificationService notificationService) {
+		NotificationService notificationService, GameService gameService) {
         this.reservationRepository = reservationRepository;
         this.gameRepository = gameRepository;
         this.memberRepository = memberRepository;
@@ -74,6 +78,7 @@ public class ReservationService {
         this.storeRepository = storeRepository;
 		this.sseController = sseController;
 		this.notificationRepository = notificationRepository;
+		this.gameService = gameService;
 	  }
 
     /* 레디스를 통한 예약하기 */
@@ -89,7 +94,9 @@ public class ReservationService {
 	            .orElseThrow(() -> new IllegalArgumentException("없는 게임 ID입니다."));
 	
 	    Owner owner = game.getStore().getOwner();
-	
+
+	    validateReservableTime(game, dto.getResDateTime());
+
 	    String reservationKey = RESERVATION_LOCK_PREFIX
 	            + game.getStore().getStoreName() + ":"
 	            + game.getGameName() + ":"
@@ -125,6 +132,19 @@ public class ReservationService {
 	    } catch (Exception e) {
 	        reservationRedisTemplate.delete(reservationKey);
 	        throw e;
+	    }
+	}
+
+	// 요청 시각이 그 게임의 예약 가능 시작 시각(사장님 지정 시간대 또는 1시간 단위) 중 하나인지 확인.
+	private void validateReservableTime(Game game, String resDateTime) {
+	    LocalTime requested;
+	    try {
+	        requested = LocalTime.parse(resDateTime == null ? "" : resDateTime.trim());
+	    } catch (DateTimeParseException e) {
+	        throw new IllegalArgumentException("예약 시각 형식이 올바르지 않습니다(HH:mm): " + resDateTime);
+	    }
+	    if (!gameService.getAvailableHours(game).contains(requested)) {
+	        throw new IllegalArgumentException("(예약불가) 해당 게임의 예약 가능 시간대가 아닙니다: " + resDateTime);
 	    }
 	}
     /* 예약한 리스트 */
