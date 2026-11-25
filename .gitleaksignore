@@ -1,0 +1,3 @@
+# CI-only dummy JWT values committed before secrets were generated at runtime (issue #8)
+80e7e4c4239e18d9c8a3117f85d403c9edb0ab86:.github/workflows/ci.yml:generic-api-key:42
+80e7e4c4239e18d9c8a3117f85d403c9edb0ab86:.github/workflows/ci.yml:generic-api-key:43

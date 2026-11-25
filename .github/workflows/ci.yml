@@ -39,8 +39,6 @@ jobs:
       MAIL_PORT: "1025"
       MAIL_USERNAME: ci
       MAIL_PASSWORD: ci
-      JWT_SECRET: Y2ktb25seS1qd3Qtc2VjcmV0LWZvci10ZXN0cy0wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=
-      JWT_SECRET_RT: Y2ktb25seS1yZWZyZXNoLXNlY3JldC1mb3ItdGVzdHMtMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=
       AWS_ACCESS_KEY: ci-dummy
       AWS_SECRET_KEY: ci-dummy
       AWS_REGION: ap-northeast-2
@@ -48,6 +46,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+      - name: Generate throwaway JWT secrets (never stored in the repo)
+        run: |
+          echo "JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')" >> "$GITHUB_ENV"
+          echo "JWT_SECRET_RT=$(openssl rand -base64 64 | tr -d '\n')" >> "$GITHUB_ENV"
+
 
       - uses: actions/setup-java@v5
         with:
